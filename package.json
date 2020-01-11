@@ -1,5 +1,8 @@
 {
   "name": "playlistbot",
+  "engines": {
+    "node": ">=12.14.1"
+  },
   "type": "module",
   "version": "0.0.1",
   "description": "Reddit bot that generates playlists out of the top responses of a thread.",

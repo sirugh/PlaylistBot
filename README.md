@@ -4,7 +4,7 @@
 
 Scrapes a reddit thread for top posts, searches Spotify for songs matching post text and creates a playlist from the results.
 
-## Run it!
+## How To
 
 1) Create a `secrets.json` file in the root.
 
@@ -25,4 +25,6 @@ Scrapes a reddit thread for top posts, searches Spotify for songs matching post 
 }
 ```
 
-2) `yarn start`
+2) Install dependencies with `yarn`.
+
+3) Run it with `yarn start`.
