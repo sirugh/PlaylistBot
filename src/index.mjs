@@ -18,6 +18,7 @@ const run = async () => {
         // .setSuggestedSort('top') // TODO: Figure out why this returns a 403.
         .comments
         .filter(comment => comment.ups > 1000) // only use comments with > 1000 upvotes
+        .filter(comment => comment.body != "[removed]") // dont use deleted comments
         .sort((a, b) => b.ups - a.ups)
 
     console.log(`Found ${comments.length} reddit comments with 1000 upvotes`)
