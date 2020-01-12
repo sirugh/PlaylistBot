@@ -9,10 +9,11 @@ const secrets = require(path.resolve("secrets.json"));
 const run = async () => {
     const spotifyToken = await Spotify.logIn();
     const authedReddit = Reddit.logIn();
-    const submission = authedReddit.getSubmission(secrets.reddit.thread)
-
     // TODO: figure out how to limit this query
-    const comments = await submission.comments
+    const comments = await authedReddit
+        .getSubmission(secrets.reddit.thread)
+        // .setSuggestedSort('top') // TODO: Figure out why this returns a 403.
+        .comments
         .filter(comment => comment.ups > 1000) // only use comments with > 1000 upvotes
         .sort((a, b) => b.ups - a.ups)
 

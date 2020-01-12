@@ -1,6 +1,4 @@
-import axios from 'axios';
 import path from 'path';
-import { dirname } from 'path';
 import request from 'request';
 import { require } from './util.mjs';
 
@@ -16,7 +14,7 @@ const logIn = async () => {
 
     const getToken = async () => {
         return new Promise((resolve, reject) => request({
-            url: "https://accounts.spotify.com/api/token",
+            url: ENDPOINT,
             method: "POST",
             headers: {
                 'Authorization': `Basic ${encodedData}`,
@@ -38,13 +36,9 @@ const logIn = async () => {
 }
 
 const search = async (token, searchString) => {
-    console.log(`Searching Spotify for "${searchString}"`);
-
     const ENDPOINT = 'https://api.spotify.com/v1/search?limit=1&type=track&query='
     const urlSearchString = searchString.split(' ').join('+')
     const url = `${ENDPOINT}${urlSearchString}`
-
-    console.log(`using url ${url}`)
 
     const search = async () => {
         return new Promise((resolve, reject) => request({
@@ -71,6 +65,8 @@ const search = async (token, searchString) => {
         const response = await search();
 
         const result = {
+            searchString,
+            searchUrl: url,
             id: response.tracks.items[0].id,
             name: response.tracks.items[0].name,
             url: response.tracks.items[0].external_urls.spotify
