@@ -7,8 +7,8 @@ import { require } from './util.mjs';
 const secrets = require(path.resolve("secrets.json"));
 
 const run = async () => {
-    const spotifyToken = await Spotify.logIn();
-    const authedReddit = Reddit.logIn();
+    const spotifyToken = await Spotify.logIn(secrets.spotify);
+    const authedReddit = Reddit.logIn(secrets.reddit);
     // TODO: figure out how to limit this query
     const comments = await authedReddit
         .getSubmission(secrets.reddit.thread)

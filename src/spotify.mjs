@@ -1,14 +1,10 @@
-import path from 'path';
 import request from 'request';
-import { require } from './util.mjs';
 
-const secrets = require(path.resolve("secrets.json"));
 
 // Auth with Spotify
-const logIn = async () => {
+const logIn = async ({ clientId, clientSecret }) => {
     const ENDPOINT = 'https://accounts.spotify.com/api/token';
     const POST_QUERY = 'grant_type=client_credentials';
-    const { clientId, clientSecret } = secrets.spotify;
     let buf = Buffer.from(`${clientId}:${clientSecret}`);
     let encodedData = buf.toString('base64');
 

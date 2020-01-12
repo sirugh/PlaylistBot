@@ -1,14 +1,7 @@
-import path from 'path';
-import { require } from './util.mjs';
-
-const secrets = require(path.resolve("secrets.json"));
-
 // Auth with Reddit
 import snoowrap from 'snoowrap'
 
-const { userAgent, clientId, clientSecret, username, password } = secrets.reddit;
-
-const logIn = () => new snoowrap({
+const logIn = ({ userAgent, clientId, clientSecret, username, password }) => new snoowrap({
     userAgent,
     clientId,
     clientSecret,
