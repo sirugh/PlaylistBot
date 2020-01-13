@@ -16,7 +16,6 @@ Scrapes a reddit thread for top posts, searches Spotify for songs matching post 
     "clientSecret": "Your reddit client secret",
     "username": "Your reddit username",
     "password": "Your reddit password",
-    "thread": "embv3x"
   },
   "spotify": {
     "clientId": "Your spotify client id",
