@@ -20,7 +20,7 @@ const run = async () => {
         .filter(comment => comment.ups > 1000) // only use comments with > 1000 upvotes
         .sort((a, b) => b.ups - a.ups)
 
-    console.log(`Found ${comments.length} reddit comments with 1000 upvotes`)
+    console.log(`Found ${comments.length} Reddit comments with at least 1000 upvotes.`)
 
     Promise.all(
         comments
