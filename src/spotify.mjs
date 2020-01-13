@@ -94,7 +94,8 @@ const setPlaylistTracks = async (token, uris) => {
 const search = async (token, searchString) => {
     const ENDPOINT = 'https://api.spotify.com/v1/search?limit=1&type=track&query='
     const urlSearchString = searchString.split(' ').join('+')
-    const url = `${ENDPOINT}${urlSearchString}`
+    const filter = '+NOT+karaoke';
+    const url = `${ENDPOINT}${urlSearchString}${filter}`
 
     const search = async () => {
         return new Promise((resolve, reject) => request.get({
