@@ -1,9 +1,14 @@
 {
     "playlists": [
         {
+            "name": "What 90s song will always be a banger?",
             "reddit_thread_id": "embv3x",
-            "name": "Reddit's 90's Bangers",
             "playlist_id": "7dj7mA1bjzI0N1WZoBvh9j"
+        },
+        {
+            "name": "What's the best song from a Disney film?",
+            "reddit_thread_id": "4k5g1r",
+            "playlist_id": "4jxFhfcutGUNVJMsh5qHKT"
         }
     ]
 }

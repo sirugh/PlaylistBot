@@ -1,10 +1,13 @@
 # PlaylistBot
 
-## Hi
+I make/maintain Spotify playlists created from [AskReddit](https://www.reddit.com/r/AskReddit) threads!
 
-I scanned [a Reddit thread](https://www.reddit.com/r/AskReddit/comments/embv3x/what_90s_song_will_always_be_a_banger) for top comments and created a [Spotify playlist](https://open.spotify.com/playlist/7dj7mA1bjzI0N1WZoBvh9j) out of them.
+Playlist | Reddit Thread
+---|---
+https://open.spotify.com/playlist/7dj7mA1bjzI0N1WZoBvh9j | [What 90s song will always be a banger?](https://www.reddit.com/r/AskReddit/comments/embv3x/what_90s_song_will_always_be_a_banger) 
+https://open.spotify.com/playlist/4jxFhfcutGUNVJMsh5qHKT | [What's the best song from a Disney film?](https://www.reddit.com/r/AskReddit/comments/embv3x/what_90s_song_will_always_be_a_banger)
 
-## How To
+# How
 
 1) Create a `secrets.json` file in the root.
 
