@@ -8,6 +8,7 @@ https://open.spotify.com/playlist/7dj7mA1bjzI0N1WZoBvh9j | [What 90s song will a
 https://open.spotify.com/playlist/2hrj1QLTLW5grBJXkN1sSg | [Lyrically, what is the best “Fuck You” song of all time?](https://www.reddit.com/r/AskReddit/comments/9k5zfb)
 https://open.spotify.com/playlist/6dG6KQIzXHovGevpU1iiGG | [What song reminds you of the best times of your life?](https://www.reddit.com/r/AskReddit/comments/cw1d3h)
 https://open.spotify.com/playlist/3nBmmb82z1316vQMmgQWC6 | [What is the best TV theme song?](https://www.reddit.com/r/AskReddit/comments/dykjt8)
+https://open.spotify.com/playlist/4559hsM6qpMf6kO4nJMG1a | [What's your favorite underrated song that isn't very popular by a very popular band/musician?](https://www.reddit.com/r/Music/comments/a2b4tj/whats_your_favorite_underrated_song_that_isnt/)
 
 You may notice interesting results. This is because:
 
