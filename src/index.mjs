@@ -18,6 +18,7 @@ const run = async () => {
         return
     }
 
+    // TODO: Make this a for loop. Can't use async like this, it'll just start all the spotify searches at the same time.
     config.playlists.forEach(async playlist => {
         console.log(`Searching Reddit thread ${playlist.reddit_thread_id}...`)
         // TODO: figure out how to limit this query
@@ -36,6 +37,7 @@ const run = async () => {
             `Found ${comments.length} Reddit comments (after filtering).`
         )
 
+        console.log('Searching Spotify for songs...')
         // For each comment, search and then pause 100ms before resolving to
         // give the API some time to breathe.
         const results = []
@@ -45,6 +47,7 @@ const run = async () => {
             await delay(100)
             results.push(result)
         }
+
         const filteredResults = results.filter(x => x)
         console.log(`Found ${filteredResults.length} songs on Spotify.`)
 

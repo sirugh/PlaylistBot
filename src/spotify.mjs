@@ -35,6 +35,7 @@ const init = async ({ clientId, clientSecret, code }) => {
 }
 
 const search = async (api, searchString) => {
+    //TODO Why does Fuck you - Ceelo Green not return a result?
     // Split on hyphen, or "by" if possible.
     let [songNameGuess, artistNameGuess] = searchString.split('-')
     if (!songNameGuess) {
@@ -43,7 +44,7 @@ const search = async (api, searchString) => {
 
     if (!songNameGuess) return
 
-    const filterString = ['karaoke', 'made famous by', 'performed by']
+    const filterString = ['karaoke', 'made famous by', 'performed by', 'originally by']
         .map(text => `"${text}"`)
         .join(' NOT ')
 
