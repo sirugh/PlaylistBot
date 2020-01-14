@@ -51,3 +51,4 @@ Done in 3.70s.
 * I do not do any modifications to the search string _besides_ including the specific "NOT karaoke" which.
 * Spotify search returns covers/remixes as the first result sometimes -- For example, `Basket Case by Green Day` returns a cover while `query=Basket Case` returns the original.
 * I get rate limited :(
+* Results can be duplicated (or more) if similar comments/titles are upvoted equally.
