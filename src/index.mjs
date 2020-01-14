@@ -24,9 +24,9 @@ const run = async () => {
         console.log(`Searching Reddit thread ${playlist.reddit_thread_id}...`)
         // TODO: figure out how to limit this query
         const comments = await redditApi
-            .getSubmission(playlist.reddit_thread_id)
+            .getSubmission(playlist.reddit_thread_id).comments
             // .setSuggestedSort('top') // TODO: Figure out why this returns a 403.
-            .comments.filter(comment => comment.ups > 1000) // only use comments with > 1000 upvotes
+            // .comments.filter(comment => comment.ups > 1000) // Would prefer to use limit instead, but lets see how this works.
             .filter(comment => {
                 // dont use deleted or removed comments
                 const filterTerms = ["[removed]", "[deleted]"]

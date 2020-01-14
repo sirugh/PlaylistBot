@@ -4,9 +4,12 @@ I make/maintain Spotify playlists created from [AskReddit](https://www.reddit.co
 
 Playlist | Reddit Thread
 ---|---
-https://open.spotify.com/playlist/7dj7mA1bjzI0N1WZoBvh9j | [What 90s song will always be a banger?](https://www.reddit.com/r/AskReddit/comments/embv3x/what_90s_song_will_always_be_a_banger) 
-https://open.spotify.com/playlist/4jxFhfcutGUNVJMsh5qHKT | [What's the best song from a Disney film?](https://www.reddit.com/r/AskReddit/comments/embv3x/what_90s_song_will_always_be_a_banger)
+https://open.spotify.com/playlist/7dj7mA1bjzI0N1WZoBvh9j | [What 90s song will always be a banger?](https://www.reddit.com/r/AskReddit/comments/embv3x) 
+https://open.spotify.com/playlist/2hrj1QLTLW5grBJXkN1sSg | [Lyrically, what is the best “Fuck You” song of all time?](https://www.reddit.com/r/AskReddit/comments/9k5zfb)
+https://open.spotify.com/playlist/6dG6KQIzXHovGevpU1iiGG | [What song reminds you of the best times of your life?](https://www.reddit.com/r/AskReddit/comments/cw1d3h)
+https://open.spotify.com/playlist/3nBmmb82z1316vQMmgQWC6 | [What is the best TV theme song?](https://www.reddit.com/r/AskReddit/comments/dykjt8)
 
+Lyrically, what is the best “Fuck You” song of all time?
 # How
 
 1) Create a `secrets.json` file in the root.
@@ -47,3 +50,4 @@ Done in 3.70s.
 
 * I do not do any modifications to the search string _besides_ including the specific "NOT karaoke" which.
 * Spotify search returns covers/remixes as the first result sometimes -- For example, `Basket Case by Green Day` returns a cover while `query=Basket Case` returns the original.
+* I get rate limited :(

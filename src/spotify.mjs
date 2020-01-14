@@ -54,7 +54,8 @@ const search = async (api, searchString) => {
             uri: body.tracks.items[0].uri
         }
     } catch (err) {
-        console.error(err)
+        // Noisy as this happens for _every_ matched song.
+        // console.error(err)
     }
 }
 
