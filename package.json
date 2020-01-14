@@ -8,12 +8,17 @@
   "description": "Reddit bot that generates playlists out of the top responses of a thread.",
   "main": "src/index.js",
   "scripts": {
+    "prettier": "prettier --single-quote --no-semi --tab-width 4 --write \"{src,__{tests,mocks}__}/**/*.mjs\"",
     "start": "node --experimental-modules src/index.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Stephen Rugh",
   "license": "ISC",
   "dependencies": {
-    "snoowrap": "^1.20.1"
+    "snoowrap": "^1.20.1",
+    "spotify-web-api-node": "^4.0.0"
+  },
+  "devDependencies": {
+    "prettier": "1.19.1"
   }
 }
