@@ -7,7 +7,7 @@ import { require } from './util/index.mjs'
 const config = require(path.resolve('config.json'))
 
 /**
- * Initialize the spotify API. 
+ * Initialize the spotify API.
  * @param {string} clientId
  * @param {string} clientSecret
  * @param {string} code The code returned from a Spotify /authorize request.
@@ -35,18 +35,33 @@ const init = async ({ clientId, clientSecret, code }) => {
 }
 
 const search = async (api, searchString) => {
-    const query = `${searchString} NOT karaoke`
-    // Sometimes comments can be pretty long...
-    // console.log(`Searching for "${searchString.substring(0, 20)}...".`)
+    // Split on hyphen, or "by" if possible.
+    let [songNameGuess, artistNameGuess] = searchString.split('-')
+    if (!songNameGuess) {
+        let [songNameGuess, artistNameGuess] = searchString.split('by')
+    }
+
+    if (!songNameGuess) return
+
+    const filterString = ['karaoke', 'made famous by', 'performed by']
+        .map(text => `"${text}"`)
+        .join(' NOT ')
+
+    // Sometimes comments can be pretty long. Search by the first 40 characters,
+    // which should be longer than most song titles and exclude some common
+    // strings that produce covers.
+    const query = `${songNameGuess.substring(0, 40)} NOT ${filterString}`
+    // console.log(`Searching for "${query}...".`)
+
     try {
         const { body } = await api.search(query, ['track'], {})
 
         if (!body.tracks.items.length) {
-            return;
+            return
         }
 
         return {
-            searchString,
+            query,
             id: body.tracks.items[0].id,
             title: body.tracks.items[0].name,
             artist: body.tracks.items[0].artists[0].name,
@@ -54,8 +69,8 @@ const search = async (api, searchString) => {
             uri: body.tracks.items[0].uri
         }
     } catch (err) {
-        // Noisy as this happens for _every_ matched song.
-        // console.error(err)
+        // Noisy as this could happen for _every_ matched song.
+        console.error(err)
     }
 }
 

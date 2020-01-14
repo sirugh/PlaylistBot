@@ -2,12 +2,10 @@ import path from 'path'
 
 import * as Reddit from './reddit.mjs'
 import * as Spotify from './spotify.mjs'
-import { require } from './util/index.mjs'
+import { delay, require } from './util/index.mjs'
 
 const config = require(path.resolve('config.json'))
 const secrets = require(path.resolve('secrets.json'))
-
-const PLAYLIST_ID = config.playlists[0].playlist_id
 
 const run = async () => {
     // Initialize an authorized spotifyApi instance.
@@ -16,49 +14,51 @@ const run = async () => {
     const redditApi = Reddit.logIn(secrets.reddit)
 
     if (!token) {
-        console.log('Unable to authorize, exiting.');
-        return;
+        console.log('Unable to authorize, exiting.')
+        return
     }
 
     config.playlists.forEach(async playlist => {
         console.log(`Searching Reddit thread ${playlist.reddit_thread_id}...`)
         // TODO: figure out how to limit this query
         const comments = await redditApi
-            .getSubmission(playlist.reddit_thread_id).comments
-            // .setSuggestedSort('top') // TODO: Figure out why this returns a 403.
-            // .comments.filter(comment => comment.ups > 1000) // Would prefer to use limit instead, but lets see how this works.
+            .getSubmission(playlist.reddit_thread_id)
+            .comments // TODO: Figure out why this returns a 403.
+            // .setSuggestedSort('top')
             .filter(comment => {
                 // dont use deleted or removed comments
-                const filterTerms = ["[removed]", "[deleted]"]
-                return !filterTerms.includes(comment.body);
+                const filterTerms = ['[removed]', '[deleted]']
+                return !filterTerms.includes(comment.body)
             })
             .sort((a, b) => b.ups - a.ups)
 
         console.log(
-            `Found ${comments.length} Reddit comments with at least 1000 upvotes.`
+            `Found ${comments.length} Reddit comments (after filtering).`
         )
 
-        Promise.all(
-            comments.map(async comment => {
-                return await Spotify.search(spotifyApi, comment.body)
-            })
-        ).then(async results => {
-            const filteredResults = results.filter(x => x)
-            console.log(`Found ${filteredResults.length} songs on Spotify.`)
+        // For each comment, search and then pause 100ms before resolving to
+        // give the API some time to breathe.
+        const results = []
+        for (let index = 0; index < comments.length; index++) {
+            const comment = comments[index]
+            const result = await Spotify.search(spotifyApi, comment.body)
+            await delay(100)
+            results.push(result)
+        }
+        const filteredResults = results.filter(x => x)
+        console.log(`Found ${filteredResults.length} songs on Spotify.`)
 
-            if (!filteredResults.length) return;
+        if (!filteredResults.length) return
 
-            console.log(`Replacing songs on playlist...`)
-            try {
-                await spotifyApi.replaceTracksInPlaylist(
-                    playlist.playlist_id,
-                    filteredResults.map(result => result.uri)
-                )
-            }
-            catch (err) {
-                console.error('Unable to add tracks to playlist.')
-            }
-        })
+        console.log(`Replacing songs on playlist...`)
+        try {
+            await spotifyApi.replaceTracksInPlaylist(
+                playlist.playlist_id,
+                filteredResults.map(result => result.uri)
+            )
+        } catch (err) {
+            console.error('Unable to add tracks to playlist.')
+        }
     })
 }
 
