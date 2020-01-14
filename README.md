@@ -9,7 +9,6 @@ https://open.spotify.com/playlist/2hrj1QLTLW5grBJXkN1sSg | [Lyrically, what is t
 https://open.spotify.com/playlist/6dG6KQIzXHovGevpU1iiGG | [What song reminds you of the best times of your life?](https://www.reddit.com/r/AskReddit/comments/cw1d3h)
 https://open.spotify.com/playlist/3nBmmb82z1316vQMmgQWC6 | [What is the best TV theme song?](https://www.reddit.com/r/AskReddit/comments/dykjt8)
 
-Lyrically, what is the best “Fuck You” song of all time?
 # How
 
 1) Create a `secrets.json` file in the root.
