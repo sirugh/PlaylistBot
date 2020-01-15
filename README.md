@@ -33,14 +33,14 @@ You may notice interesting results. This is because:
   "spotify": {
     "clientId": "Your Spotify client id",
     "clientSecret": "Your Spotify client secret",
-    "code": "Your auth code from an interactive Spotify user authorization"
+    "redirectUri": "Your Spotify App's redirect uri"
   }
 }
 ```
 
-2) Update your `config.json` with your own playlist id and the id for the reddit thread you want to scan.
+2) Update your `config.json` with your own playlist IDs and the IDs for the reddit threads you want to scan.
 
-3) Run it with `yarn start`.
+3) Run it with `yarn start` and open your browser to http://localhost:3000. Log in/authorize and the bot will begin!
 
 ```bash
 $ yarn start

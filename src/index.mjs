@@ -1,68 +1,161 @@
-import path from 'path'
+import path from 'path';
+import express from 'express';
+import SpotifyWebApi from 'spotify-web-api-node';
+import snoowrap from 'snoowrap';
 
-import * as Reddit from './reddit.mjs'
-import * as Spotify from './spotify.mjs'
-import { delay, require } from './util/index.mjs'
+import { delay, requireJSON } from './util.mjs';
 
-const config = require(path.resolve('config.json'))
-const secrets = require(path.resolve('secrets.json'))
+const config = requireJSON(path.resolve('config.json'));
+const secrets = requireJSON(path.resolve('secrets.json'));
 
-const run = async () => {
-    // Initialize an authorized spotifyApi instance.
-    const spotifyApi = await Spotify.init(secrets.spotify)
-    const token = spotifyApi.getAccessToken()
-    const redditApi = Reddit.logIn(secrets.reddit)
+const app = express();
+const port = 3000;
 
-    if (!token) {
-        console.log('Unable to authorize, exiting.')
-        return
+const spotifyApi = new SpotifyWebApi({
+    clientId: secrets.spotify.clientId,
+    clientSecret: secrets.spotify.clientSecret,
+    redirectUri: secrets.spotify.redirectUri
+});
+
+const redditApi = new snoowrap({
+    ...secrets.reddit
+});
+
+app.get('/', (req, res) => {
+    // If we are alread authed then proceed directly to go.
+    if (spotifyApi.getAccessToken()) {
+        res.redirect('/go');
+    } else {
+        // Otherwise start the auth process.
+        const authorizeUrl = spotifyApi.createAuthorizeURL([
+            'user-read-private',
+            'playlist-modify-public'
+        ]);
+        res.redirect(authorizeUrl);
     }
+});
 
-    // TODO: Make this a for loop. Can't use async like this, it'll just start all the spotify searches at the same time.
-    config.playlists.forEach(async playlist => {
-        console.log(`Searching Reddit thread ${playlist.reddit_thread_id}...`)
+app.get('/spotify_auth', async (req, res) => {
+    await spotifyApi.authorizationCodeGrant(req.query.code).then(
+        data => {
+            // Set the access token on the API object to use it in later calls
+            spotifyApi.setAccessToken(data.body['access_token']);
+            spotifyApi.setRefreshToken(data.body['refresh_token']);
+            res.redirect('/go');
+        },
+        err => {
+            console.error(err);
+            res.send('Something went wrong!');
+        }
+    );
+});
+
+app.get('/go', async (req, res) => {
+    for (let i = 0; i < config.playlists.length; i++) {
+        const { reddit_thread_id, playlist_id } = config.playlists[i];
+
+        console.log(`Searching Reddit thread ${reddit_thread_id}...`);
         // TODO: figure out how to limit this query
-        const comments = await redditApi
-            .getSubmission(playlist.reddit_thread_id)
-            .comments // TODO: Figure out why this returns a 403.
-            // .setSuggestedSort('top')
+        let comments = await redditApi
+            .getSubmission(reddit_thread_id)
+            .comments;
+        // TODO: Figure out why this returns a 403.
+        // .setSuggestedSort('top')
+
+        comments = comments
+            .map(comment => comment.body.trim())
+            // dont use deleted or removed comments    
             .filter(comment => {
-                // dont use deleted or removed comments
-                const filterTerms = ['[removed]', '[deleted]']
-                return !filterTerms.includes(comment.body)
+                const filterTerms = ['[removed]', '[deleted]'];
+                return !filterTerms.includes(comment.body);
             })
-            .sort((a, b) => b.ups - a.ups)
+            // dedupe
+            .filter((comment, index) => comments.indexOf(comment) === index)
+            .sort((a, b) => b.ups - a.ups);
 
         console.log(
             `Found ${comments.length} Reddit comments (after filtering).`
-        )
+        );
 
-        console.log('Searching Spotify for songs...')
+        console.log('Searching Spotify for songs...');
+
         // For each comment, search and then pause 100ms before resolving to
         // give the API some time to breathe.
-        const results = []
+        const results = [];
         for (let index = 0; index < comments.length; index++) {
-            const comment = comments[index]
-            const result = await Spotify.search(spotifyApi, comment.body)
-            await delay(100)
-            results.push(result)
+            const comment = comments[index];
+            const result = await searchSpotify(comment);
+            await delay(100);
+            results.push(result);
         }
 
-        const filteredResults = results.filter(x => x)
-        console.log(`Found ${filteredResults.length} songs on Spotify.`)
+        const filteredResults = results.filter(x => x);
+        console.log(`Found ${filteredResults.length} songs on Spotify.`);
 
-        if (!filteredResults.length) return
+        if (!filteredResults.length) return;
 
-        console.log(`Replacing songs on playlist...`)
+        console.log('Replacing songs on playlist...');
         try {
             await spotifyApi.replaceTracksInPlaylist(
-                playlist.playlist_id,
+                playlist_id,
                 filteredResults.map(result => result.uri)
-            )
+            );
+            console.log('Done!');
         } catch (err) {
-            console.error('Unable to add tracks to playlist.')
+            console.error('Unable to add tracks to playlist.');
         }
-    })
-}
+    }
+    res.redirect('/done');
+});
 
-run()
+app.get('/done', (req, res) => { res.send('Done!'); });
+app.listen(port, () => console.log(`Bot listening on port ${port}!`));
+
+const searchSpotify = async searchString => {
+    //TODO Why does Fuck you - Ceelo Green not return a result?
+    // Split on hyphen, or "by" if possible.
+    let [songNameGuess] = searchString.split('-');
+    if (!songNameGuess) {
+        [songNameGuess] = searchString.split('by');
+    }
+
+    if (!songNameGuess) return;
+
+    const filterString = [
+        'karaoke',
+        'made famous by',
+        'performed by',
+        'originally by'
+    ]
+        .map(text => `"${text}"`)
+        .join(' NOT ');
+
+    // Sometimes comments can be pretty long. Search by the first 40 characters,
+    // which should be longer than most song titles and exclude some common
+    // strings that produce covers.
+    const query = `${songNameGuess.substring(0, 40)} NOT ${filterString}`;
+
+    try {
+        const { body } = await spotifyApi.search(query, ['track'], {});
+
+        if (!body.tracks.items.length) {
+            return;
+        }
+
+        const result = {
+            query,
+            title: body.tracks.items[0].name,
+            artist: body.tracks.items[0].artists[0].name,
+            url: body.tracks.items[0].external_urls.spotify,
+            uri: body.tracks.items[0].uri
+        };
+
+        // console.log(`QUERY: ${songNameGuess}`);
+        // console.log(`RESULT: ${result.title} - ${result.artist}`);
+
+        return result;
+    } catch (err) {
+        // Noisy as this could happen for _every_ matched song.
+        console.error(err);
+    }
+};
