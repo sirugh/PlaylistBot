@@ -1,34 +1,40 @@
 {
     "playlists": [
         {
-            "thread_name": "What 90s song will always be a banger?",
+            "thread_name": "What 90's song will always be a banger?",
             "reddit_thread_id": "embv3x",
+            "playlist_name": "r/ 90's bangers",
             "playlist_id": "7dj7mA1bjzI0N1WZoBvh9j"
         },
         {
-            "thread_name": "Lyrically, what is the best “Fuck You” song of all time?",
-            "reddit_thread_id": "9k5zfb",
-            "playlist_id": "2hrj1QLTLW5grBJXkN1sSg"
+            "thread_name": "What 2000's song will always be a banger?",
+            "reddit_thread_id": "clqmdu",
+            "playlist_name": "r/ 2000's bangers",
+            "playlist_id": "6TJARXoNPS5T3JEkZwvyjQ"
+        },
+        {
+            "thread_name": "What is one song that instantly gets you hyped as fuck when it is played?",
+            "reddit_thread_id": "5h45en",
+            "playlist_name": "r/ hype playlist",
+            "playlist_id": "0nJNMGdsmUQg0V3mHtSazH"
         },
         {
             "thread_name": "What song reminds you of the best times of your life?",
             "reddit_thread_id": "cw1d3h",
+            "playlist_name": "r/ the best times of your life",
             "playlist_id": "6dG6KQIzXHovGevpU1iiGG"
-        },
-        {
-            "thread_name": "What is the best TV theme song?",
-            "reddit_thread_id": "dykjt8",
-            "playlist_id": "3nBmmb82z1316vQMmgQWC6"
-        },
-        {
-            "thread_name": "r/ Underrated Songs by Popular Musicians",
-            "reddit_thread_id": "a2b4tj",
-            "playlist_id": "4559hsM6qpMf6kO4nJMG1a"
         },
         {
             "thread_name": "Depressed people of Reddit, what's your go-to \"I want to wallow in my melancholy\" song?",
             "reddit_thread_id": "ep7tm4",
+            "playlist_name": "r/ wallowing in melancholy",
             "playlist_id": "2ozZNmLkaAWTGGd1CG9HyX"
+        },
+        {
+            "thread_name": "What is the best TV theme song?",
+            "reddit_thread_id": "dykjt8",
+            "playlist_name": "r/ tv theme songs",
+            "playlist_id": "3nBmmb82z1316vQMmgQWC6"
         }
     ]
 }

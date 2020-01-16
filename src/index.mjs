@@ -53,35 +53,35 @@ app.get('/spotify_auth', async (req, res) => {
 app.get('/go', async (req, res) => {
     res.redirect('/done');
     for (let i = 0; i < config.playlists.length; i++) {
-        const { thread_name, reddit_thread_id, playlist_id } = config.playlists[i];
+        const { thread_name, reddit_thread_id, playlist_id, playlist_name } = config.playlists[i];
 
-        console.log(`Searching Reddit thread ${reddit_thread_id}...`);
+        console.log(`Searching Reddit thread "${thread_name}...`);
         // TODO: figure out how to limit this query
         let comments = await redditApi
             .getSubmission(reddit_thread_id)
             .comments
             .fetchMore({
                 amount: 100
-            });
+            })
+            .sort((a, b) => b.ups - a.ups);
         // TODO: Figure out why this returns a 403.
         // .setSuggestedSort('top')
 
-        console.log(`Found ${comments.length} in thread "${thread_name}"`);
+        console.log(`Found ${comments.length} comments.`);
         
         comments = comments
             .map(comment => comment.body.trim())
-            // dont use deleted or removed comments    
+            // dont use deleted or removed comments 
             .filter(comment => {
                 const filterTerms = ['[removed]', '[deleted]'];
                 return !filterTerms.includes(comment.body);
-            })
+            });
             // TODO: figure out why dedupe results in an empty array of comments
             // dedupe
             // .filter((comment, index) => comments.indexOf(comment) === index)
-            .sort((a, b) => b.ups - a.ups);
 
         console.log(
-            `Found ${comments.length} Reddit comments (after filtering).`
+            `Found ${comments.length} comments (after filtering).`
         );
 
         console.log('Searching Spotify for songs...');
@@ -91,9 +91,15 @@ app.get('/go', async (req, res) => {
         const results = [];
         for (let index = 0; index < comments.length; index++) {
             const comment = comments[index];
-            const result = await searchSpotify(comment);
-            await delay(100);
-            results.push(result);
+            try {
+                await delay(100);
+                const result = await searchSpotify(comment);
+                results.push(result);
+            }
+            catch (err) {
+                console.log(`Error adding ${comment} to Spotify:`, err);
+            }
+            
         }
 
         const filteredResults = results.filter(x => x);
@@ -101,7 +107,7 @@ app.get('/go', async (req, res) => {
 
         if (!filteredResults.length) return;
 
-        console.log('Replacing songs on playlist...');
+        console.log(`Replacing songs on playlist "${playlist_name}"`);
         try {
             // Can only send 100 songs with the API. Eventually we can just 
             // split the list and send several update requests.
@@ -131,27 +137,29 @@ app.listen(port, () => console.log(`Bot listening on port ${port}!`));
  * 
  * @param {String} searchString A string of any size or length
  */
-const guessTrackAndArtist = async searchString => {
+const guessTrackAndArtist = async (searchString = '') => {
     // Split on hyphen, or "by" if possible.
     let trackGuess = searchString;
-    let artistGuess;
+    let artistGuess = '';
     
     // TODO use markdown parser to extract from a link
 
     // TODO some smart parsing. Split on - or by, search, and get top result 
     // that matches "artistGuess" from split? etc...
     // Using the full string leaves the guesswork to Spotify's algorithm.
-    // if (searchString.includes('-')) {
-    //     [trackGuess, artistGuess] = searchString.split('-');
-    // } else if(searchString.includes('by')) {
-    //     [trackGuess, artistGuess] = searchString.split('by');
-    // }
-
-    return [trackGuess, artistGuess];
+    if (searchString.includes('-')) {
+        [trackGuess, artistGuess] = searchString.split('-');
+    } else if(searchString.includes('by')) {
+        [trackGuess, artistGuess] = searchString.split('by');
+    }
+    
+    // TODO: removed/deleted are making it here...
+    console.log(`Guess: "${trackGuess}"`);
+    return [trackGuess.trim(), artistGuess.trim()];
 };
 
 const searchSpotify = async searchString => {
-    const [trackGuess, artistGuess] = await guessTrackAndArtist(searchString);
+    const [trackGuess] = await guessTrackAndArtist(searchString);
 
     const filterString = [
         'karaoke',
