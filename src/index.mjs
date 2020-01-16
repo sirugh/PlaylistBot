@@ -138,7 +138,9 @@ const guessTrackAndArtist = async searchString => {
     
     // TODO use markdown parser to extract from a link
 
-    // TODO some smart parsing. Split on - or by, search, and get top result that matches "artistGuess" from split? etc...
+    // TODO some smart parsing. Split on - or by, search, and get top result 
+    // that matches "artistGuess" from split? etc...
+    // Using the full string leaves the guesswork to Spotify's algorithm.
     // if (searchString.includes('-')) {
     //     [trackGuess, artistGuess] = searchString.split('-');
     // } else if(searchString.includes('by')) {
