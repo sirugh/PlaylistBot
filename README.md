@@ -14,8 +14,7 @@ https://open.spotify.com/playlist/3nBmmb82z1316vQMmgQWC6 | [What is the best TV 
 You may notice interesting results. This is because:
 
 * Search strings are difficult. Comments come in many shapes and sizes so I do my best to guess what song name is being requested.
-* Spotify search returns covers/remixes as the first result sometimes -- For example, `Basket Case by Green Day` returns a cover while `query=Basket Case` returns the original.
-* I get rate limited :(
+* Spotify search returns covers/remixes as the first result sometimes -- For example, `query=Basket Case by Green Day` returns a cover while `query=Basket Case` returns the original.
 * Results can be duplicated (or more) if similar comments/titles are upvoted equally.
 
 # How
