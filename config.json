@@ -1,29 +1,34 @@
 {
     "playlists": [
         {
-            "name": "What 90s song will always be a banger?",
+            "thread_name": "What 90s song will always be a banger?",
             "reddit_thread_id": "embv3x",
             "playlist_id": "7dj7mA1bjzI0N1WZoBvh9j"
         },
         {
-            "name": "Lyrically, what is the best “Fuck You” song of all time?",
+            "thread_name": "Lyrically, what is the best “Fuck You” song of all time?",
             "reddit_thread_id": "9k5zfb",
             "playlist_id": "2hrj1QLTLW5grBJXkN1sSg"
         },
         {
-            "name": "What song reminds you of the best times of your life?",
+            "thread_name": "What song reminds you of the best times of your life?",
             "reddit_thread_id": "cw1d3h",
             "playlist_id": "6dG6KQIzXHovGevpU1iiGG"
         },
         {
-            "name": "What is the best TV theme song?",
+            "thread_name": "What is the best TV theme song?",
             "reddit_thread_id": "dykjt8",
             "playlist_id": "3nBmmb82z1316vQMmgQWC6"
         },
         {
-            "name": "r/ Underrated Songs by Popular Musicians",
+            "thread_name": "r/ Underrated Songs by Popular Musicians",
             "reddit_thread_id": "a2b4tj",
             "playlist_id": "4559hsM6qpMf6kO4nJMG1a"
+        },
+        {
+            "thread_name": "Depressed people of Reddit, what's your go-to \"I want to wallow in my melancholy\" song?",
+            "reddit_thread_id": "ep7tm4",
+            "playlist_id": "2ozZNmLkaAWTGGd1CG9HyX"
         }
     ]
 }

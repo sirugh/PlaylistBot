@@ -51,17 +51,23 @@ app.get('/spotify_auth', async (req, res) => {
 });
 
 app.get('/go', async (req, res) => {
+    res.redirect('/done');
     for (let i = 0; i < config.playlists.length; i++) {
-        const { reddit_thread_id, playlist_id } = config.playlists[i];
+        const { thread_name, reddit_thread_id, playlist_id } = config.playlists[i];
 
         console.log(`Searching Reddit thread ${reddit_thread_id}...`);
         // TODO: figure out how to limit this query
         let comments = await redditApi
             .getSubmission(reddit_thread_id)
-            .comments;
+            .comments
+            .fetchMore({
+                amount: 100
+            });
         // TODO: Figure out why this returns a 403.
         // .setSuggestedSort('top')
 
+        console.log(`Found ${comments.length} in thread "${thread_name}"`);
+        
         comments = comments
             .map(comment => comment.body.trim())
             // dont use deleted or removed comments    
@@ -69,8 +75,9 @@ app.get('/go', async (req, res) => {
                 const filterTerms = ['[removed]', '[deleted]'];
                 return !filterTerms.includes(comment.body);
             })
+            // TODO: figure out why dedupe results in an empty array of comments
             // dedupe
-            .filter((comment, index) => comments.indexOf(comment) === index)
+            // .filter((comment, index) => comments.indexOf(comment) === index)
             .sort((a, b) => b.ups - a.ups);
 
         console.log(
@@ -96,19 +103,22 @@ app.get('/go', async (req, res) => {
 
         console.log('Replacing songs on playlist...');
         try {
+            // Can only send 100 songs with the API. Eventually we can just 
+            // split the list and send several update requests.
+            const toSend = filteredResults
+                .slice(0, 100);
             await spotifyApi.replaceTracksInPlaylist(
                 playlist_id,
-                filteredResults.map(result => result.uri)
+                toSend.map(result => result.uri)
             );
             console.log('Done!');
         } catch (err) {
-            console.error('Unable to add tracks to playlist.');
+            console.error('Unable to add tracks to playlist.', err);
         }
     }
-    res.redirect('/done');
 });
 
-app.get('/done', (req, res) => { res.send('Done!'); });
+app.get('/done', (req, res) => { res.send('Bot is searching - Give it some time.'); });
 app.listen(port, () => console.log(`Bot listening on port ${port}!`));
 
 const searchSpotify = async searchString => {
