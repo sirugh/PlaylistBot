@@ -121,15 +121,35 @@ app.get('/go', async (req, res) => {
 app.get('/done', (req, res) => { res.send('Bot is searching - Give it some time.'); });
 app.listen(port, () => console.log(`Bot listening on port ${port}!`));
 
-const searchSpotify = async searchString => {
-    //TODO Why does Fuck you - Ceelo Green not return a result?
+/**
+ * Try to guess what part of the string is the song name. Songs can be 
+ * difficult to guess. Some search strings may be [song] - [artist] and some 
+ * may be the inverse. Others may have multiple references, separated by some 
+ * delimeter. Sometimes text is a markdown link, so we have to parse the text.
+ * 
+ * Potentially async if I end up using some intermediate queries.
+ * 
+ * @param {String} searchString A string of any size or length
+ */
+const guessTrackAndArtist = async searchString => {
     // Split on hyphen, or "by" if possible.
-    let [songNameGuess] = searchString.split('-');
-    if (!songNameGuess) {
-        [songNameGuess] = searchString.split('by');
-    }
+    let trackGuess = searchString;
+    let artistGuess;
+    
+    // TODO use markdown parser to extract from a link
 
-    if (!songNameGuess) return;
+    // TODO some smart parsing. Split on - or by, search, and get top result that matches "artistGuess" from split? etc...
+    // if (searchString.includes('-')) {
+    //     [trackGuess, artistGuess] = searchString.split('-');
+    // } else if(searchString.includes('by')) {
+    //     [trackGuess, artistGuess] = searchString.split('by');
+    // }
+
+    return [trackGuess, artistGuess];
+};
+
+const searchSpotify = async searchString => {
+    const [trackGuess, artistGuess] = await guessTrackAndArtist(searchString);
 
     const filterString = [
         'karaoke',
@@ -143,7 +163,7 @@ const searchSpotify = async searchString => {
     // Sometimes comments can be pretty long. Search by the first 40 characters,
     // which should be longer than most song titles and exclude some common
     // strings that produce covers.
-    const query = `${songNameGuess.substring(0, 40)} NOT ${filterString}`;
+    const query = `${trackGuess.substring(0, 40)} NOT ${filterString}`;
 
     try {
         const { body } = await spotifyApi.search(query, ['track'], {});
