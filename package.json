@@ -1,25 +1,27 @@
 {
   "name": "playlistbot",
   "engines": {
-    "node": ">=12.14.1"
+    "node": ">=18.0.0"
   },
   "type": "module",
   "version": "0.0.1",
   "description": "Reddit bot that generates playlists out of the top responses of a thread.",
-  "main": "src/index.js",
+  "main": "src/index.mjs",
   "scripts": {
     "lint": "eslint --fix src/**/*.mjs",
-    "start": "node --experimental-modules src/index.mjs && open http://localhost:3000",
+    "start": "node src/index.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Stephen Rugh",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1",
-    "snoowrap": "^1.20.1",
-    "spotify-web-api-node": "^4.0.0"
+    "express": "^5.2.1",
+    "snoowrap": "^1.23.0",
+    "spotify-web-api-node": "^5.0.2"
   },
   "devDependencies": {
-    "eslint": "^6.8.0"
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0"
   }
 }
