@@ -1,46 +1,59 @@
 {
-  "playlists": [
+  "searches": [
     {
-      "thread_name": "Whats your favorite song that's not in English?",
-      "reddit_thread_id": "tbewtu",
+      "query": "favorite song not in English",
+      "subreddits": ["AskReddit"],
+      "time": "all",
       "playlist_name": "r/ non-english favorites",
       "playlist_id": "4sqJi3CKFneIKvG7cLFDDn"
     },
     {
-      "thread_name": "What 90's song will always be a banger?",
-      "reddit_thread_id": "embv3x",
+      "query": "90s song will always be a banger",
+      "subreddits": ["AskReddit"],
+      "time": "all",
       "playlist_name": "r/ 90's bangers",
       "playlist_id": "7dj7mA1bjzI0N1WZoBvh9j"
     },
     {
-      "thread_name": "What 2000's song will always be a banger?",
-      "reddit_thread_id": "clqmdu",
+      "query": "2000s song will always be a banger",
+      "subreddits": ["AskReddit"],
+      "time": "all",
       "playlist_name": "r/ 2000's bangers",
       "playlist_id": "6TJARXoNPS5T3JEkZwvyjQ"
     },
     {
-      "thread_name": "What is one song that instantly gets you hyped as fuck when it is played?",
-      "reddit_thread_id": "5h45en",
+      "query": "song instantly gets you hyped",
+      "subreddits": ["AskReddit"],
+      "time": "all",
       "playlist_name": "r/ hype playlist",
       "playlist_id": "0nJNMGdsmUQg0V3mHtSazH"
     },
     {
-      "thread_name": "What song reminds you of the best times of your life?",
-      "reddit_thread_id": "cw1d3h",
+      "query": "song reminds you of best times of your life",
+      "subreddits": ["AskReddit"],
+      "time": "all",
       "playlist_name": "r/ the best times of your life",
       "playlist_id": "6dG6KQIzXHovGevpU1iiGG"
     },
     {
-      "thread_name": "Depressed people of Reddit, what's your go-to \"I want to wallow in my melancholy\" song?",
-      "reddit_thread_id": "ep7tm4",
+      "query": "go-to song to wallow in melancholy",
+      "subreddits": ["AskReddit"],
+      "time": "all",
       "playlist_name": "r/ wallowing in melancholy",
       "playlist_id": "2ozZNmLkaAWTGGd1CG9HyX"
     },
     {
-      "thread_name": "What is the best TV theme song?",
-      "reddit_thread_id": "dykjt8",
+      "query": "best TV show theme song",
+      "subreddits": ["AskReddit"],
+      "time": "all",
       "playlist_name": "r/ tv theme songs",
       "playlist_id": "3nBmmb82z1316vQMmgQWC6"
     }
-  ]
+  ],
+  "options": {
+    "threads_per_search": 1,
+    "comments_per_thread": 100,
+    "tracks_per_playlist": 100,
+    "claude_model": "claude-haiku-4-5-20251001"
+  }
 }
