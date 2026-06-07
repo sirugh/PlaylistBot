@@ -1,166 +1,125 @@
-import express from "express";
-import { randomUUID } from "crypto";
-import SpotifyWebApi from "spotify-web-api-node";
-import snoowrap from "snoowrap";
-import { setTimeout as delay } from "timers/promises";
+import fs from "fs";
+import { authenticate, getMe, searchTrack, createPlaylist, replacePlaylistTracks } from "./spotify.mjs";
+import { searchThreads, getTopComments } from "./reddit.mjs";
+import { createExtractor } from "./claude.mjs";
 
-import { requireJSON } from "./util.mjs";
+const requireJSON = (url) => JSON.parse(fs.readFileSync(url, "utf8"));
 
 const config = requireJSON(new URL("../config.json", import.meta.url));
 const secrets = requireJSON(new URL("../secrets.json", import.meta.url));
 
-const app = express();
-const port = 3000;
+const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const spotifyApi = new SpotifyWebApi({
-  clientId: secrets.spotify.clientId,
-  clientSecret: secrets.spotify.clientSecret,
-  redirectUri: secrets.spotify.redirectUri,
-});
+const {
+  threads_per_search = 1,
+  comments_per_thread = 100,
+  tracks_per_playlist = 100,
+  claude_model,
+} = config.options ?? {};
 
-const redditApi = new snoowrap({ ...secrets.reddit });
+const apiKey = process.env.ANTHROPIC_API_KEY ?? secrets.anthropic?.apiKey;
+const extractSongs = createExtractor(apiKey, claude_model);
 
-const FILTERED_BODIES = new Set(["[removed]", "[deleted]"]);
+const run = async () => {
+  // ── Spotify OAuth ────────────────────────────────────────────────────────
+  console.log("=== Authenticating with Spotify ===");
+  const { access_token } = await authenticate(
+    secrets.spotify.clientId,
+    secrets.spotify.clientSecret,
+    secrets.spotify.redirectUri
+  );
+  const me = await getMe(access_token);
+  console.log(`Logged in as: ${me.display_name ?? me.id}\n`);
 
-// Cover/karaoke filter applied to every Spotify search
-const COVER_FILTERS = ["karaoke", "made famous by", "performed by", "originally by"]
-  .map((t) => `NOT "${t}"`)
-  .join(" ");
+  const summary = [];
 
-let oauthState = null;
+  // ── Process each search ───────────────────────────────────────────────────
+  for (const search of config.searches) {
+    const { query, subreddits = ["AskReddit"], time = "all", playlist_name, playlist_id } = search;
 
-app.get("/", (req, res) => {
-  if (spotifyApi.getAccessToken()) {
-    console.log("Spotify access token already exists.");
-    res.redirect("/go");
-  } else {
-    oauthState = randomUUID();
-    const authorizeUrl = spotifyApi.createAuthorizeURL(
-      ["user-read-private", "playlist-modify-public"],
-      oauthState
-    );
-    res.redirect(authorizeUrl);
-  }
-});
+    console.log(`=== "${playlist_name}" ===`);
+    console.log(`Searching Reddit for: "${query}"`);
 
-app.get("/spotify_auth", async (req, res) => {
-  const { code, state } = req.query;
-  if (!code || state !== oauthState) {
-    res.status(400).send("Invalid OAuth callback.");
-    return;
-  }
-  oauthState = null;
-  try {
-    const data = await spotifyApi.authorizationCodeGrant(code);
-    spotifyApi.setAccessToken(data.body["access_token"]);
-    spotifyApi.setRefreshToken(data.body["refresh_token"]);
-    console.log("Spotify tokens set.");
-    res.redirect("/go");
-  } catch (err) {
-    console.error("Spotify auth error:", err);
-    res.status(500).send("Spotify authentication failed.");
-  }
-});
-
-app.get("/go", async (req, res) => {
-  res.redirect("/done");
-
-  for (const { thread_name, reddit_thread_id, playlist_id, playlist_name } of config.playlists) {
-    try {
-      console.log(`Searching Reddit thread "${thread_name}"...`);
-
-      // fetchMore retrieves up to `amount` additional comments; sort client-side
-      // because setSuggestedSort('top') returns 403 from the Reddit API.
-      let comments = await redditApi
-        .getSubmission(reddit_thread_id)
-        .comments.fetchMore({ amount: 100 })
-        .sort((a, b) => b.ups - a.ups);
-
-      console.log(`Found ${comments.length} comments.`);
-
-      comments = comments
-        .map((comment) => comment.body.trim())
-        .filter((comment) => !FILTERED_BODIES.has(comment))
-        .filter((comment, i, arr) => arr.indexOf(comment) === i);
-
-      console.log(`Found ${comments.length} comments (after filtering and deduplication).`);
-      console.log("Searching Spotify for songs...");
-
-      const results = [];
-      for (const comment of comments) {
-        try {
-          await delay(100);
-          const result = await searchSpotify(comment);
-          if (result) results.push(result);
-        } catch (err) {
-          console.log(`Error searching Spotify for "${comment}":`, err);
-        }
-      }
-
-      console.log(`Found ${results.length} songs on Spotify.`);
-
-      if (!results.length) {
-        console.log(`No songs found for "${playlist_name}", skipping.`);
-        continue;
-      }
-
-      console.log(`Replacing songs on playlist "${playlist_name}"...`);
-      // Spotify API limit: replaceTracksInPlaylist accepts at most 100 URIs.
-      await spotifyApi.replaceTracksInPlaylist(
-        playlist_id,
-        results.slice(0, 100).map((r) => r.uri)
-      );
-      console.log(`Done updating "${playlist_name}".`);
-    } catch (err) {
-      console.error(`Error processing playlist "${playlist_name}":`, err);
+    // 1. Find the most relevant/upvoted threads
+    const threads = await searchThreads(query, subreddits, threads_per_search * 3, time);
+    if (!threads.length) {
+      console.log("No threads found, skipping.\n");
+      summary.push({ playlist_name, status: "skipped — no threads found" });
+      continue;
     }
+    const topThreads = threads.slice(0, threads_per_search);
+    console.log(`Using: ${topThreads.map((t) => `"${t.title}" (↑${t.score})`).join(", ")}`);
+
+    // 2. Collect and deduplicate comments across threads
+    const allComments = [];
+    for (const thread of topThreads) {
+      await delay(500); // be polite to the Reddit API
+      const comments = await getTopComments(thread.id, comments_per_thread);
+      allComments.push(...comments);
+    }
+    const uniqueComments = [...new Set(allComments)];
+    console.log(`Collected ${uniqueComments.length} unique comments.`);
+
+    // 3. Extract song names using Claude
+    console.log("Extracting songs with Claude...");
+    const rawSongs = await extractSongs(uniqueComments);
+
+    // Deduplicate by lowercase title
+    const seen = new Set();
+    const songs = rawSongs.filter(({ title }) => {
+      const key = title.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    console.log(`Extracted ${songs.length} unique songs.`);
+
+    // 4. Search Spotify for each song
+    console.log("Searching Spotify...");
+    const uris = [];
+    for (const { title, artist } of songs) {
+      if (uris.length >= tracks_per_playlist) break;
+      try {
+        await delay(100);
+        const track = await searchTrack(title, artist, access_token);
+        if (track) {
+          console.log(`  ✓ "${track.name}" — ${track.artists[0].name}`);
+          uris.push(track.uri);
+        }
+      } catch (err) {
+        console.error(`  ✗ "${title}": ${err.message}`);
+      }
+    }
+    console.log(`Found ${uris.length} tracks on Spotify.`);
+
+    if (!uris.length) {
+      console.log("No tracks found, skipping playlist update.\n");
+      summary.push({ playlist_name, status: "skipped — no Spotify tracks found" });
+      continue;
+    }
+
+    // 5. Create or update the playlist
+    let targetId = playlist_id;
+    if (!targetId) {
+      const pl = await createPlaylist(me.id, playlist_name, access_token);
+      targetId = pl.id;
+      console.log(`Created new playlist (ID: ${targetId})`);
+      console.log(`  → Add "playlist_id": "${targetId}" to this entry in config.json to reuse it.`);
+    }
+
+    await replacePlaylistTracks(targetId, uris, access_token);
+    console.log(`Updated "${playlist_name}" with ${uris.length} tracks.\n`);
+    summary.push({ playlist_name, status: `updated with ${uris.length} tracks` });
   }
-});
 
-app.get("/done", (req, res) => {
-  res.send("Bot is running — check the console for progress.");
-});
-
-app.listen(port, () => console.log(`Bot listening on port ${port}!`));
-
-/**
- * Parses a raw Reddit comment into [trackGuess, artistGuess].
- * Splits on " - " (hyphen) or " by " (word boundary) if present.
- */
-const guessTrackAndArtist = (searchString = "") => {
-  let trackGuess = searchString;
-  let artistGuess = "";
-
-  if (searchString.includes("-")) {
-    [trackGuess, artistGuess] = searchString.split("-");
-  } else if (/ by /i.test(searchString)) {
-    // Use regex to avoid splitting words that contain "by" (e.g. "somebody")
-    [trackGuess, artistGuess] = searchString.split(/ by /i);
+  // ── Summary ───────────────────────────────────────────────────────────────
+  console.log("=== Summary ===");
+  for (const { playlist_name, status } of summary) {
+    console.log(`  ${playlist_name}: ${status}`);
   }
-
-  return [trackGuess.trim(), artistGuess.trim()];
 };
 
-const searchSpotify = async (searchString) => {
-  const [trackGuess] = guessTrackAndArtist(searchString);
-
-  // Truncate to 40 chars to avoid over-specific strings, then exclude covers.
-  const query = `${trackGuess.substring(0, 40)} ${COVER_FILTERS}`;
-
-  try {
-    const { body } = await spotifyApi.search(query, ["track"]);
-
-    if (!body.tracks.items.length) return;
-
-    const track = body.tracks.items[0];
-    return {
-      query,
-      title: track.name,
-      artist: track.artists[0].name,
-      url: track.external_urls.spotify,
-      uri: track.uri,
-    };
-  } catch (err) {
-    console.error(`Spotify search error for "${query}":`, err);
-  }
-};
+run().catch((err) => {
+  console.error("\nFatal error:", err.message);
+  process.exit(1);
+});
