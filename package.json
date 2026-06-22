@@ -15,7 +15,7 @@
   "author": "Stephen Rugh",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "snoowrap": "^1.20.1",
     "spotify-web-api-node": "^4.0.0"
   },
